@@ -35,7 +35,7 @@ app.use('/uploads', express.static(__dirname+'/uploads'));
 app.use(cors(
   {
     credentials: true,
-    origin: 'https://client-bookingapp.vercel.app/',
+    origin: 'https://client-bookingapp.vercel.app',
     optionsSuccessStatus: 200,
   }
 ));
