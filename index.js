@@ -189,13 +189,11 @@ app.post('/places', (req,res) => {
 });
 
 // ambil data places
-app.get('/user-places', (req,res) =>{
+app.get('/user-places', async (req,res) =>{
   mongoose.connect(process.env.MONGODB_URI); 
-  const {token} = req.cookies;
-  jwt.verify(token, jwtSecret, {}, async (err,userData) => {
-      const {id} = userData;
-      res.json(await Place.find({owner:id}));
-  });
+  const userData = await getUserDataFromToken(req)
+  res.json(await Place.find({owner:userData.id}));
+
 })
 
 // ambil data places sesuai id
