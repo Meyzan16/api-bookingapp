@@ -36,7 +36,6 @@ app.use(cors(
   {
     credentials: true,
     origin: 'https://client-bookingapp.vercel.app',
-    optionsSuccessStatus: 200,
   }
 ));
 
@@ -58,13 +57,14 @@ function getUserDataFromToken(req){
 
 // test api mongodb
 app.get('/test',  (req,res) => {
-  // mongoose.connect(process.env.MONGODB_URI);
+  mongoose.connect(process.env.MONGODB_URI);
     res.json('test ok');
 });
 
 // api register
 // pass mongodb = urDjCcssKdaQ59R0
 app.post('/register', async (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   const {name,email,password} = req.body;
   try {
       const userDoc = await User.create({
@@ -80,6 +80,7 @@ app.post('/register', async (req,res) => {
 
 // api login
 app.post('/login', async (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   const {email,password} = req.body;
   const userDoc = await User.findOne({email});
 
@@ -112,6 +113,7 @@ app.post('/logout', (req,res) => {
 //  check cookie apakah user udah login atau belum
 //instal cookie = npm install cookie-parser untuk ambil data , jadi ketika di refresh data yang sudah login tidak hilang
 app.get('/profile', (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   // cek cookie;
   const {token} = req.cookies;  
   // ammbil user_id
@@ -119,8 +121,8 @@ app.get('/profile', (req,res) => {
     jwt.verify(token, jwtSecret, {}, async (err,userData) => {
       if(err) throw err;
       //ketiaka cookie sudah dapata atau token sama dengan cookie maka seharusnya jika di refresh data tidak hilang
-      const {name,email,id} = await User.findById(userData.id);
-      res.json({name,email,id});
+      const {name,email,_id} = await User.findById(userData.id);
+      res.json({name,email,_id});
 
       // cek token
       //res.json('token', token);
@@ -132,6 +134,7 @@ app.get('/profile', (req,res) => {
 
 // upload photo lewat link
 app.post('/upload-photo-by-link', async (req, res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   const {link} = req.body;
   const newName = 'photo' + Date.now() + '.jpg';
   await imageDownloader.image({
@@ -147,6 +150,7 @@ app.post('/upload-photo-by-link', async (req, res) => {
 // upload photo lewat device
 const photosMiddleware = multer({dest:'uploads/'});
 app.post('/upload-photo', photosMiddleware.array('photos',100), async (req, res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   // console.log(req.files);
   // ambil path name dalam array agar bisa di lihat poto lewat get
   const uploadedFiles = [];
@@ -166,6 +170,7 @@ app.post('/upload-photo', photosMiddleware.array('photos',100), async (req, res)
 
 // addNewPlace
 app.post('/places', (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   const {token} = req.cookies;  
   const {title,address,addedPhoto,description,perks,extraInfo,checkIn,checkOut,maxGuests,price} = req.body;
 
@@ -182,13 +187,16 @@ app.post('/places', (req,res) => {
 
 // ambil data places
 app.get('/user-places', async (req,res) =>{
-  const userData = await getUserDataFromToken(req)
-  res.json(await Place.find({owner:userData.id}));
-
+  mongoose.connect(process.env.MONGODB_URI);
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    const {id} = userData;
+    res.json(await Place.find({owner:id}));
+  })
 })
 
 // ambil data places sesuai id
 app.get('/places/:id', async (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   // res.json(req.params);
   const {id} = req.params;
   res.json(await Place.findById(id));
@@ -197,6 +205,7 @@ app.get('/places/:id', async (req,res) => {
 
 // updatePlace
 app.put('/places', async (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   const {token} = req.cookies;  
   const {id, title,address,addedPhoto,description,perks,extraInfo,checkIn,checkOut,maxGuests,price} = req.body;
   // ambil user id
@@ -225,11 +234,13 @@ app.put('/places', async (req,res) => {
 
 // ambil getplaces halaman homepage
 app.get('/places', async (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   res.json( await Place.find() );
 });
 
 // booking widget
 app.post('/bookings', async (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
 
   //ambil id owner 
   const userData = await getUserDataFromToken(req);
@@ -251,6 +262,7 @@ app.post('/bookings', async (req,res) => {
 
 
 app.get('/bookings', async (req,res) => {
+  mongoose.connect(process.env.MONGODB_URI);
   const userData = await getUserDataFromToken(req);
   res.json( await Booking.find({owner:userData.id}).populate('place'))
 }); 
