@@ -36,6 +36,7 @@ app.use(cors(
   {
     credentials: true,
     origin: 'https://client-bookingapp.vercel.app',
+    // origin: 'http://localhost:5173',
   }
 ));
 
@@ -43,14 +44,7 @@ app.use(cors(
 console.log(process.env.MONGODB_URI);
 mongoose.connect(process.env.MONGODB_URI);
 
-function getUserDataFromToken(req){ 
-  return new Promise((resolve, reject) => {
-    jwt.verify(req.cookies.token, jwtSecret, {}, async (err,userData) => {
-      if(err) throw err;
-      resolve(userData);
-    });
-  })
-}
+
 
 
 
@@ -125,7 +119,7 @@ app.get('/profile', (req,res) => {
       res.json({name,email,_id});
 
       // cek token
-      //res.json('token', token);
+      // res.json('token', token);
     });
   }else{
     res.json(null);
@@ -188,6 +182,8 @@ app.post('/places', (req,res) => {
 // ambil data places
 app.get('/user-places', async (req,res) =>{
   mongoose.connect(process.env.MONGODB_URI);
+  const {token} = req.cookies; 
+
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
     const {id} = userData;
     res.json(await Place.find({owner:id}));
@@ -259,7 +255,14 @@ app.post('/bookings', async (req,res) => {
   });
 });
 
-
+function getUserDataFromToken(req){ 
+  return new Promise((resolve, reject) => {
+    jwt.verify(req.cookies.token, jwtSecret, {}, async (err,userData) => {
+      if(err) throw err;
+      resolve(userData);
+    });
+  })
+}
 
 app.get('/bookings', async (req,res) => {
   mongoose.connect(process.env.MONGODB_URI);
