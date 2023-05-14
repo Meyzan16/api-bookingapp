@@ -185,8 +185,9 @@ app.get('/user-places', async (req,res) =>{
   const {token} = req.cookies; 
 
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-    const {id} = userData;
-    res.json(await Place.find({owner:id}));
+    if(err) throw err;
+    // const {id} = userData;
+    res.json(await Place.find({owner:userData.id}));
   })
 })
 
@@ -266,8 +267,17 @@ function getUserDataFromToken(req){
 
 app.get('/bookings', async (req,res) => {
   mongoose.connect(process.env.MONGODB_URI);
-  const userData = await getUserDataFromToken(req);
-  res.json( await Booking.find({owner:userData.id}).populate('place'))
+
+  const {token} = req.cookies; 
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    if(err) throw err;
+    // const {id} = userData;
+    // res.json(await Place.find({owner:id}));
+    res.json( await Place.find({owner:userData.id}).populate('place'))
+  })
+
+
+  
 }); 
 
 app.listen(4000);
