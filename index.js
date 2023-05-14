@@ -111,7 +111,7 @@ app.get('/profile', (req,res) => {
   // cek cookie;
   const {token} = req.cookies;  
   // ammbil user_id
-  // if(token){
+  if(token){
     jwt.verify(token, jwtSecret, {}, async (err,userData) => {
       if(err) throw err;
       //ketiaka cookie sudah dapata atau token sama dengan cookie maka seharusnya jika di refresh data tidak hilang
@@ -121,9 +121,9 @@ app.get('/profile', (req,res) => {
       // cek token
       // res.json('token', token);
     });
-  // }else{
-  //   res.json(null);
-  // }
+  }else{
+    res.json(null);
+  }
 });
 
 // upload photo lewat link
